@@ -1,8 +1,8 @@
 
 
 #include <stdint.h>
-#include "headers.h"
-#include "ring_buffer.h"
+#include "../include/headers.h"
+#include "../include/ring_buffer.h"
 
 void ringBufferInit(ring_buffer_t *rb)
 {
