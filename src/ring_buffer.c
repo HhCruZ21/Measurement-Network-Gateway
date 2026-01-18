@@ -4,14 +4,14 @@
 #include "headers.h"
 #include "ring_buffer.h"
 
-void ring_buffer_init(ring_buffer_t *rb)
+void ringBufferInit(ring_buffer_t *rb)
 {
     rb->head = 0;
     rb->tail = 0;
 }
 
 /* Producer side */
-int ring_buffer_push(ring_buffer_t *rb, const sample_t *s)
+int ringBufferPush(ring_buffer_t *rb, const sample_t *s)
 {
     uint32_t next_head = (rb->head + 1) % RING_BUFFER_SAMPLES;
 
@@ -27,7 +27,7 @@ int ring_buffer_push(ring_buffer_t *rb, const sample_t *s)
 }
 
 /* Consumer side */
-int ring_buffer_pop(ring_buffer_t *rb, sample_t *s)
+int ringBufferPop(ring_buffer_t *rb, sample_t *s)
 {
     if (rb->head == rb->tail)
     {
@@ -39,7 +39,7 @@ int ring_buffer_pop(ring_buffer_t *rb, sample_t *s)
     return 0;
 }
 
-uint32_t ring_buffer_count(const ring_buffer_t *rb)
+uint32_t ringBufferCount(const ring_buffer_t *rb)
 {
     if (rb->head >= rb->tail)
         return rb->head - rb->tail;

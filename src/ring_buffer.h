@@ -16,14 +16,14 @@ typedef struct
 } ring_buffer_t;
 
 /* Initialize ring buffer */
-void ring_buffer_init(ring_buffer_t *rb);
+void ringBufferInit(ring_buffer_t *rb);
 
 //  Producer: push one sample
-int ring_buffer_push(ring_buffer_t *rb, const sample_t *s);
+int ringBufferPush(ring_buffer_t *rb, const sample_t *s);
 
 // Consumer: pop one sample
-int ring_buffer_pop(ring_buffer_t *rb, sample_t *s);
+int ringBufferPop(ring_buffer_t *rb, sample_t *s);
 
-uint32_t ring_buffer_count(const ring_buffer_t *rb);
+uint32_t ringBufferCount(const ring_buffer_t *rb);
 
 #endif

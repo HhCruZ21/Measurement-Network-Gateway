@@ -7,8 +7,9 @@
 #include <fcntl.h>
 #include <linux/gpio.h>
 #include <poll.h>
+#include <sched.h>
 
-static void add_us(struct timespec *t, long us)
+static void addUs(struct timespec *t, long us)
 {
     t->tv_nsec += us * 1000;
     while (t->tv_nsec >= 1000000000L)
@@ -18,8 +19,30 @@ static void add_us(struct timespec *t, long us)
     }
 }
 
+static void setRealTime(int priority){
+    struct sched_param sp;
+    sp.sched_priority = priority;
+    
+    if(sched_setscheduler(0, SCHED_FIFO, &sp) != 0){
+        perror("sched_setscheduler");
+    }
+}
+
+static void setCpuAffinity(int cpu){
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(cpu, &cpuset);
+
+    if(sched_setaffinity(0, sizeof(cpuset), &cpuset) != 0){
+        perror("sched_setaffinity");
+    }
+}
+
 void *snsrThrdFunc(void *arg)
 {
+    setCpuAffinity(0);
+    setRealTime(80);
+
     ring_buffer_t *rb = (ring_buffer_t *)arg;
 
     struct timespec next;
@@ -73,7 +96,7 @@ void *snsrThrdFunc(void *arg)
                 (uint64_t)next.tv_nsec / 1000ULL;
             s.value = 100; /* dummy temperature */
 
-            if (ring_buffer_push(rb, &s) != 0)
+            if (ringBufferPush(rb, &s) != 0)
             {
             }
         }
@@ -88,7 +111,7 @@ void *snsrThrdFunc(void *arg)
                 (uint64_t)next.tv_nsec / 1000ULL;
             s.value = (int32_t)tick;
 
-            if (ring_buffer_push(rb, &s) != 0)
+            if (ringBufferPush(rb, &s) != 0)
             {
             }
         }
@@ -103,7 +126,7 @@ void *snsrThrdFunc(void *arg)
                 (uint64_t)next.tv_nsec / 1000ULL;
             s.value = (int32_t)(tick * 2U);
 
-            if (ring_buffer_push(rb, &s) != 0)
+            if (ringBufferPush(rb, &s) != 0)
             {
             }
         }
@@ -124,7 +147,7 @@ void *snsrThrdFunc(void *arg)
                 s.timestampUs = ev.timestamp / 1000ULL; /* ns → µs */
                 s.value = (ev.id == GPIOEVENT_EVENT_RISING_EDGE);
 
-                if (ring_buffer_push(rb, &s) != 0)
+                if (ringBufferPush(rb, &s) != 0)
                 {
                 }
             }
@@ -139,25 +162,28 @@ void *snsrThrdFunc(void *arg)
                 s.timestampUs = ev.timestamp / 1000ULL;
                 s.value = (ev.id == GPIOEVENT_EVENT_RISING_EDGE);
 
-                if (ring_buffer_push(rb, &s) != 0)
+                if (ringBufferPush(rb, &s) != 0)
                 {
                 }
             }
         }
         tick++;
-        add_us(&next, BASE_TICK_US);
+        addUs(&next, BASE_TICK_US);
     }
     return NULL;
 }
 
 void *ntwrkThrdFunc(void *arg)
 {
+    setCpuAffinity(1);
+    setRealTime(20);
+    
     ring_buffer_t *rb = (ring_buffer_t *)arg;
     sample_t s;
 
     while (1)
     {
-        if (ring_buffer_pop(rb, &s) == 0)
+        if (ringBufferPop(rb, &s) == 0)
         {
         }
         else
