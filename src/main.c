@@ -10,7 +10,7 @@ int main()
     pthread_t snsr_thrd, ntwrk_thrd;
     ring_buffer_t rb;
 
-    ring_buffer_init(&rb);
+    ringBufferInit(&rb);
 
     pthread_create(&snsr_thrd, NULL, snsrThrdFunc, &rb);
     pthread_create(&ntwrk_thrd, NULL, ntwrkThrdFunc, &rb);
